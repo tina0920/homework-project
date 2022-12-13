@@ -45,23 +45,19 @@ const processList = computed(() => {
   return voiceDataList.concat(voiceDataList, voiceDataList)
 })
 
-const currentItem = computed(() => voiceDataList.length) // 當前項目
+const currentItem = ref(voiceDataList.length) // 當前項目
 const previousItem = ref(0) // 前一個項目
 const moveX = computed(() => currentItem.value * -100)
 
-const progressbarX = ref(0) // 進度條大小
+const progressbarX = computed(() => { // 進度條大小
+  return currentItem.value % voiceDataList.length >= 0 ? currentItem.value % voiceDataList.length + 1 : currentItem.value % voiceDataList.length + 7
+}) // 進度條大小
 
 //* 切換當前項目
 function changeVoiceItem(btn: number) {
   previousItem.value = currentItem.value
   currentItem.value += btn
-  
-  // 進度條
-  const progressbarCurrent = currentItem.value % voiceDataList.length
-  progressbarX.value = progressbarCurrent >= 0 ? progressbarCurrent + 1 : progressbarCurrent + 7
-  // 清單位移
-  moveX.value = currentItem.value * -100
-  
+
   moveVoiceListLis()
 }
 
@@ -84,19 +80,16 @@ function backSecondList() {
 
   previousItem.value = currentItem.value
   currentItem.value = (currentItem.value % voiceDataList.length) + voiceDataList.length
-  moveX.value = currentItem.value * -100
 
   // 回第二輪的第一個||最後一個
-  timeline.set('.voiceList', { direction: 0, xPercent: moveX.value })
+  timeline.set('.list-item', { direction: 0, xPercent: moveX.value })
     .set(`.item${currentItem.value}`, { direction: 0, opacity: 1 }, '<')
     .set(`.item${previousItem.value}`, { direction: 0, opacity: 0.5 }, '<')
 }
 
 onMounted(() => {
-
-  timeline.set('.voiceList', { direction: 0.5, xPercent: moveX.value })
+  timeline.set('.list-item', { direction: 0.5, xPercent: moveX.value })
     .set(`.item${currentItem.value}`, { direction: 1, opacity: 1 }, '<')
-
 })
 </script>
 
@@ -131,7 +124,7 @@ onMounted(() => {
       <a class="arrow-icon" left--23px @click="changeVoiceItem(-1)"><div i-ion:chevron-back-outline c-white text-2xl /></a>
       <a class="arrow-icon" left-357px @click="changeVoiceItem(1)"><div i-ion:chevron-forward c-white text-2xl /></a>
       <div class="swiper-pagination">
-        <span :style="{ width: 1 / voiceDataList.length * 100 + '%' }" class="progressbar" />
+        <span :style="{ width: `${1 / voiceDataList.length * 100}%` }" class="progressbar" />
       </div>
     </div>
   </div>
@@ -172,6 +165,7 @@ onMounted(() => {
         }
         .list-item {
           @apply relative w-380px max-w-380px opacity-50 inline-block py-50px px-45px v-start ;
+
           .pic1{
             @apply w-50% translate-x-50%;
           }
